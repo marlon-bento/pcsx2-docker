@@ -1,0 +1,31 @@
+services:
+  pcsx2:
+    build: .
+    container_name: pcsx2_vulkan
+    network_mode: host
+    ipc: host
+    privileged: true
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - NVIDIA_VISIBLE_DEVICES=all
+      - PULSE_SERVER=unix:/run/pulse/native
+      - QT_QPA_PLATFORM=xcb
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev/dri:/dev/dri:rw
+      - /usr/share/vulkan/icd.d:/usr/share/vulkan/icd.d:ro
+      - /run/user/1000/pulse:/run/pulse:rw
+      - ./pcsx2_config:/root/.config/PCSX2:rw
+      - /dev/input:/dev/input:ro
+      - /run/udev:/run/udev:ro
+      - /dev/bus/usb:/dev/bus/usb:ro
+      - ./ps2_games:/root/games:rw
+      - ./:/root/bios:rw
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu, graphics, display]
