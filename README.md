@@ -1,30 +1,42 @@
-# PCSX2 com Suporte a GPU no Docker
+# pcsx2-docker
 
-Este documento explica como rodar o emulador PCSX2 via Docker e como a aceleração de hardware e o acesso à placa de vídeo (GPU) estão configurados no ambiente.
+Um ambiente Docker pronto para rodar o emulador PCSX2 de forma isolada no Linux, com suporte a renderização via GPU (NVIDIA/Vulkan), áudio e controles USB nativos. O processo de build, baixar e configurar o AppImage do emulador é feito automaticamente.
 
-## ⚠️ O que rodar no terminal antes de iniciar
+## 🚀 Como Usar (Passo a Passo)
 
-Como o emulador precisa abrir uma janela e usar a placa de vídeo através do X11 (o servidor gráfico do seu Linux), você precisa "liberar" a permissão de vídeo no terminal **antes** de subir o contêiner. 
+A configuração foi desenhada para ser *plug and play*. Siga os passos abaixo:
 
-**1. Libere o acesso ao seu display rodando:**
+**1. Prepare seus arquivos (BIOS e Jogos)**
+* Coloque o arquivo da sua BIOS do PS2 (ex: `bios_ps2.bin`) na mesma pasta onde está o arquivo `docker-compose.yml`.
+* Coloque suas ISOs de jogos na pasta `ps2_games`.
+
+**2. Libere o acesso de vídeo (X11)**
+Como o emulador precisa abrir uma janela e usar a placa de vídeo, você precisa liberar a permissão no terminal **antes** de subir o contêiner:
 ```bash
 xhost +local:docker
 ```
 
-
-**2. Inicie o emulador:**
+**3. Inicie o contêiner**
 ```bash
 docker compose up -d --build
 ```
+*O Docker fará o download do emulador automaticamente e subirá o ambiente.*
 
-*(Opcional) Quando terminar de jogar, você pode revogar a permissão por segurança rodando:*
+**4. Assistente de Configuração do PCSX2**
+Ao abrir a janela de boas-vindas do emulador, avance até as seguintes etapas:
+* **BIOS:** O arquivo que você colocou na raiz do projeto estará mapeado automaticamente no diretório `/root/bios`. Basta selecioná-lo na lista.
+* **Diretórios de Jogos:** Adicione o diretório onde os jogos estão mapeados (como `/root/bios/ps2_games` e marque para escanear recursivamente.
+
+Pronto! Seus jogos aparecerão na lista e você já pode jogar clássicos como God of War II com alta resolução e API Vulkan.
+
+*(Opcional) Quando terminar de jogar, você pode revogar a permissão do display rodando:*
 ```bash
 xhost -local:docker
 ```
 
 ---
 
-## Como a Placa de Vídeo é Liberada no Docker-Compose?
+## 🛠️ Como a Placa de Vídeo é Liberada no Docker-Compose?
 
 Para que o emulador dentro do contêiner consiga se comunicar com a placa de vídeo do host (sua máquina física) com desempenho máximo, utilizamos três abordagens simultâneas no `docker-compose.yml`:
 
@@ -46,7 +58,7 @@ Se você estiver utilizando uma placa de vídeo da NVIDIA, o contêiner solicita
 * **Variáveis de Ambiente Mapeadas:** 
   * `NVIDIA_DRIVER_CAPABILITIES=all`
   * `NVIDIA_VISIBLE_DEVICES=all`
-* **Requisito:** É obrigatório ter o [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) instalado no seu sistema.
+* **Requisito:** É obrigatório ter o [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) instalado e configurado no seu sistema.
 
 ### 2. Suporte a AMD/Intel (Mesa/DRI)
 
@@ -69,17 +81,19 @@ Para garantir que as APIs gráficas mais modernas (como o Vulkan, muito recomend
 
 ---
 
-## Recomendações para o GitHub (Aviso de Copyright)
+## ⚠️ Recomendações de Copyright (GitHub)
 
-Se for compartilhar este projeto no GitHub, crie um arquivo `.gitignore` na raiz do projeto com o seguinte conteúdo para evitar problemas legais (DMCA) com a Sony:
+**NUNCA** versione as BIOS (`.bin`, `.mec`, etc) ou ROMs/ISOs dos jogos em repositórios públicos. 
+
+Para evitar problemas legais (DMCA), certifique-se de que o repositório tenha um arquivo `.gitignore` ignorando esses itens, por exemplo:
 
 ```gitignore
 # Ignorar arquivos do Emulador
 *.AppImage
 
-# Ignorar pastas de Jogos e BIOS (Copyright)
-biblioteca_jogos/
-pcsx2_config/
+# Ignorar arquivos de BIOS e Jogos
+*.bin
+*.iso
+*.gz
+ps2_games/
 ```
-
-**Nunca** versione as BIOS (`.bin`, `.mec`, etc) ou ROMs/ISOs dos jogos em repositórios públicos.

@@ -1,4 +1,6 @@
 # Ignorar pastas de Jogos e BIOS (Copyright)
 biblioteca_jogos/
+ps2_games/
 pcsx2_config/
 bios_ps2.bin
+bios_ps2.mec
